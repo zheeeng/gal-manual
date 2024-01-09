@@ -2,6 +2,7 @@ export type Video = {
   id: string,
   name: string,
   src: string,
+  description: string,
   options: Choice[],
 }
 

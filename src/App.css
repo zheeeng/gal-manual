@@ -29,9 +29,25 @@ main h2 {
 footer {
   flex-shrink: 0;
   width: 100%;
+  padding: 16px;
   background-color: lightgray;
 }
 
+.main__video-frame {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main__video-frame video {
+  max-width: 100%;
+  max-height: 100%;
+}
 .main__start-mask {
   background-color: whitesmoke;
   position: absolute;
@@ -44,13 +60,19 @@ footer {
   justify-content: center;
 }
 
-
-.footer__options {
+.footer__description {
   height: 100px;
   text-align: center;
 }
 
+.footer__options {
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+}
+
 .footer__history {
-  height: 100px;
+  height: 60px;
+  line-height: 60px;
   text-align: right;
 }
