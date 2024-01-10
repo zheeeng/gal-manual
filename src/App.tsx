@@ -1,151 +1,132 @@
-import { createSignal, createMemo, createEffect, Show } from 'solid-js'
-import { Video } from './type'
+import { createSignal, createMemo, createEffect, Show, For } from 'solid-js'
+import { Asset, Choice } from './type'
+import { assets } from './assets'
 import './App.css'
 
-/** Config */
-const videos: Video[] = [
-  {
-    id: 'intro',
-    name: 'introduction to camera',
-    description: 'This is a video about cameras',
-    src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    options: [
-      { text: 'Option A', nextVideoId: 'choice1' },
-      { text: 'Option B', nextVideoId: 'choice2' },
-    ]
-  },
-  {
-    id: 'choice1',
-    name: 'choice 1',
-    description: 'This is a video about choice 1',
-    src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-    options: [
-      { text: 'Option A', nextVideoId: 'outcomeA' },
-      { text: 'Option B', nextVideoId: 'outcomeB' },
-    ]
-  },
-  {
-    id: 'choice2',
-    name: 'choice 2',
-    description: 'This is a video about choice 2',
-    src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    options: [
-      { text: 'Option A', nextVideoId: 'outcomeA' },
-      { text: 'Option B', nextVideoId: 'outcomeB' },
-    ]
-  },
-  {
-    id: 'outcomeA',
-    name: 'outcome A',
-    description: 'This is a video about outcome A',
-    src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    options: [
-    ]
-  },
-  {
-    id: 'outcomeB',
-    name: 'outcome B',
-    description: 'This is a video about outcome B',
-    src: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    options: [
-    ]
-  },
-]
-
-const title = 'Introduction to Cameras'
-const goBackText = 'Go Back to last video'
-const getStartedText = 'Get Started'
+const goBackText = 'Go Back'
 
 /** Utils */
-const videoMap = videos.reduce<Record<string, Video>>((acc, video) => ({ ...acc, [video.id]: video }), {})
-const rootVideo = videos[0]
+const assetMap = assets.reduce<Record<string, Asset>>((acc, asset) => ({ ...acc, [asset.id]: asset }), {})
+const headAsset = assets[0]
 
+function Options ({ options, onChooseOption }: { options: Choice[], onChooseOption: (optionId: string) => void }) {
+  const [currentChoices, setCurrentChoices] = createSignal(options)
+
+  const choose = (choice: Choice) => {
+    if (choice.children) {
+      setCurrentChoices(choice.children)
+    } else if (choice.nextAssetId) {
+      onChooseOption(choice.nextAssetId)
+    }
+  }
+
+  return (
+    <div class="options">
+      <For each={currentChoices()}>
+        {choice => <button onClick={() => choose(choice)}>{choice.text}</button>}
+      </For>
+    </div>
+  )
+}
+
+function Photo ({ id, src } : { id: string, src: string }) {
+  const [show, setShow] = createSignal(false)
+
+  createEffect(
+    () => {
+      const image = new Image()
+      
+      image.src = src
+
+      image.onload = () => setShow(true)
+    }
+  )
+
+  return (
+    <Show when={show()}>
+      <div class="photo-wrapper">
+        <img
+          id={id}
+          class="photo"
+          src={src}
+        />
+      </div>
+    </Show>
+  )
+}
 
 /** Runtime */
 function App() {
   let videoRef!: HTMLVideoElement
 
-  const [started, setStarted] = createSignal(false)
-  const [showPopup, setShowPopup] = createSignal(false)
-  const [currentVideoId, setCurrentVideoId] = createSignal(rootVideo.id)
-  const [history, setHistory] = createSignal<string[]>([rootVideo.id])
+  const [videoEnd, setVideoEnd] = createSignal(false)
+  const [currentAssetId, setCurrentAssetId] = createSignal(headAsset.id)
+  const [history, setHistory] = createSignal<string[]>([headAsset.id])
+  const currentAsset = createMemo(() => assetMap[currentAssetId()])
+  const showPopup = createMemo(() => !!currentAsset().options.length && (videoEnd() || currentAsset().type !== 'video'))
 
   createEffect((prevId) => {
-    if (!started()) {
-      return prevId
-    }
-    const id = currentVideoId()
-    if (prevId !== id) {
+    const asset = currentAsset()
+    if (asset.type === 'video' && prevId !== asset.id) {
       videoRef.play()
 
       videoRef.playbackRate = 10
 
-      return id
+      return asset.id
     }
 
     return prevId
   }, undefined)
 
-  const currentVideo = createMemo(() => {
-    const video = videoMap[currentVideoId()]
-
-    return {
-      id: video.id,
-      name: video.name,
-      description: video.description,
-      src: video.src,
-      options: video.options.filter(option => videoMap[option.nextVideoId]),
-    }
-  })
 
   const setOptionId = (optionId: string) => {
     setHistory([...history(), optionId])
-    setCurrentVideoId(optionId)
+    setCurrentAssetId(optionId)
   }
 
   const goBack = () => {
     const newHistory = history().slice(0, -1)
-    const newCurrentVideoId = newHistory[newHistory.length - 1]
+    const newCurrentAssetId = newHistory[newHistory.length - 1]
 
     setHistory(newHistory)
-    setCurrentVideoId(newCurrentVideoId)
+    setCurrentAssetId(newCurrentAssetId)
   }
 
   return (
     <>
       <main>
-        <video src={currentVideo().src} ref={videoRef} controls={false} onPlay={() => setShowPopup(false)} onEnded={() => setShowPopup(true)}/>
+        <Show when={currentAsset().type === 'cover'}>
+          <div
+            id={currentAsset().id}
+            class="cover"
+            style={{ 'background-image': `url(${currentAsset().src})` }}
+          />
+        </Show>
+        <Show when={currentAsset().type === 'video'}>
+          <video id={currentAsset().id} ref={videoRef} src={currentAsset().src} controls={false} onPlay={() => setVideoEnd(false)} onEnded={() => setVideoEnd(true)}>
+            Your browser does not support the video tag.
+          </video>
+        </Show>
+        <Show when={currentAsset().type === 'photo'}>
+          <Photo
+            id={currentAsset().id}
+            src={currentAsset().src}
+          />
+        </Show>
 
-        <div class="go-back">
-          <Show when={history().length > 1}>
+        <Show when={history().length > 1}>
+          <div class="go-back">
             <button onClick={goBack}>{goBackText}</button>
-          </Show>
-        </div>
+          </div>
+        </Show>
 
         <Show when={showPopup()}>
           <div class="popup slide-up-animation">
-            {/* <h2>{currentVideo().name}</h2>
-            <div class="description">
-              <Show when={started()}>
-                {currentVideo().description}
-              </Show>
-            </div> */}
-            <div class="options">
-              {currentVideo().options.map(option => (
-                <button onClick={[setOptionId, option.nextVideoId]}>{option.text}</button>
-              ))}
-            </div>
+            <Options options={currentAsset().options} onChooseOption={setOptionId}/>
           </div>
         </Show>
 
       </main>
-
-      <Show when={!started()}>
-        <div class="bonjour">
-          <h1>{title}</h1>
-          <button onclick={() => setStarted(true)}>{getStartedText}</button>
-        </div>
-      </Show>
     </>
   )
 }

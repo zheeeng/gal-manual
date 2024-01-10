@@ -1,5 +1,6 @@
-export type Video = {
+export type Asset = {
   id: string,
+  type: 'cover' | 'video' | 'photo'
   name: string,
   src: string,
   description: string,
@@ -8,10 +9,11 @@ export type Video = {
 
 export type Choice = {
   text: string,
-  nextVideoId: string,
+  nextAssetId?: string,
+  children?: Choice[],
 }
 
 export type GameState = {
   currentVideoId?: string,
-  videoMap: Record<string, Video>,
+  assetMap: Record<string, Asset>,
 }
