@@ -128,8 +128,9 @@ function Video ({ id, src, onEnded, playerRef } : { id?: string, src?: string, o
     } : undefined)
 
     videoPlayer.on('ended', async () => {
-      videoPlayer.setCurrentTime(await videoPlayer.getDuration() -1)
       onEnded?.()
+      void videoPlayer.setCurrentTime(await videoPlayer.getDuration() - 0.01)
+      void videoPlayer.pause()
     })
   })
 
