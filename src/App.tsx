@@ -4,10 +4,17 @@ import { Asset, Choice } from './type'
 import { assets } from './assets'
 import './App.css'
 import { prefetchImage } from './utils'
-import confirmAudio from '../public/audio/confirm.mp3'
-import apertureAudio from '../public/audio/aperture.mp3'
-import shutterAudio from '../public/audio/shutter.mp3'
 
+// import assets
+import playIcon from '/icon/play.svg'
+import pauseIcon from '/icon/pause.svg'
+import bgmAudio from '/audio/gal-manual-bgm.mp3'
+import confirmAudio from '/audio/confirm.mp3'
+import apertureAudio from '/audio/aperture.mp3'
+import shutterAudio from '/audio/shutter.mp3'
+
+// Set text
+const musicText = 'Music'
 const goBackText = 'Go Back'
 
 /** Utils */
@@ -133,7 +140,9 @@ function Video ({ id, src, onEnded, playerRef } : { id?: string, src?: string, o
 
 /** Runtime */
 function App() {
+  let bgmAudioRef: HTMLAudioElement | undefined
   const [videoRef, setVideoRef] = createSignal<VimeoPalerRef>();
+  const [playingBgm, setPlayingBgm] = createSignal(false)
   const [videoEnd, setVideoEnd] = createSignal(false)
   const [currentAssetId, setCurrentAssetId] = createSignal(headAsset.id)
   const [history, setHistory] = createSignal<string[]>([headAsset.id])
@@ -179,8 +188,31 @@ function App() {
     }
   })
 
+  const toggleMute = () => {
+    if (!bgmAudioRef) {
+      const audio = bgmAudioRef = new Audio(bgmAudio)
+      audio.loop = true
+      audio.volume = 0.5
+      audio.play()
+      setPlayingBgm(true)
+
+      return
+    }
+
+    if (bgmAudioRef.paused) {
+      bgmAudioRef.play()
+      setPlayingBgm(true)
+    } else {
+      bgmAudioRef.pause()
+      setPlayingBgm(false)
+    }
+  }
 
   const setOptionId = (optionId: string) => {
+    if (currentAsset()?.type === 'cover' && !bgmAudioRef) {
+      toggleMute()
+    }
+
     setHistory([...history(), optionId])
     setCurrentAssetId(optionId)
   }
@@ -224,11 +256,19 @@ function App() {
           />
         </Show>
 
-        <Show when={history().length > 1}>
-          <div class="go-back">
-            <button onClick={goBack}>{goBackText}</button>
+        <div class="controls">
+          <div>
+            <button onClick={toggleMute}>
+              {musicText}
+              <img class="music" src={playingBgm() ? pauseIcon : playIcon} />
+            </button>
           </div>
-        </Show>
+          <div>
+            <Show when={history().length > 1}>
+              <button onClick={goBack}>{goBackText}</button>
+            </Show>
+          </div>
+        </div>
 
         <Show when={showPopup()}>
           <div class="popup slide-up-animation">

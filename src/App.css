@@ -20,27 +20,11 @@ main {
   height: 100%;
 }
 
-/* main iframe {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-} */
-
-@keyframes slideDown {
-  0% {
-    background-position: center top;
-  }
-  100% {
-    background-position: center bottom;
-  }
-}
-
 main .cover {
   width: 100%;
   height: 100%;
   background-size: cover;
   background-repeat: no-repeat;
-  animation: slideDown 5s forwards;
 }
 
 @keyframes rotateAndAppear {
@@ -87,11 +71,22 @@ main .photo:hover {
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.3);
 }
 
-.go-back {
+.controls {
   position: absolute;
   top: 0;
+  left: 0;
   right: 0;
   padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.controls .music {
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin-left: 0.5em;
 }
 
 .popup {
@@ -104,6 +99,8 @@ main .photo:hover {
 
 /* Reset styles */
 button {
+  display: inline-flex;
+  align-items: center;
   padding: 1em;
   border-radius: 0.5em;
   font-size: 1.5em;

@@ -3,11 +3,21 @@ import { Asset } from './type'
 /** Config */
 export const assets: Asset[] = [
   {
-    id: 'intro',
+    id: 'cover',
     type: 'cover',
     name: 'Introduction',
     description: 'This is a introduction image',
-    src: 'https://source.unsplash.com/random/600x600/?sky',
+    src: 'https://github.com/zheeeng/gal-manual/assets/1303154/dfc3c5b8-1819-4b86-9f16-6bf2db24ec76',
+    options: [
+      { text: 'Let\'s start being a photographer!', nextAssetId: 'entry' },
+    ]
+  },
+  {
+    id: 'entry',
+    type: 'video',
+    name: 'Entry',
+    description: 'This is a entry video',
+    src: 'https://player.vimeo.com/video/901763676',
     options: [
       { text: 'Rooftop', nextAssetId: 'rooftop' },
       { text: 'Model', nextAssetId: 'model' },
