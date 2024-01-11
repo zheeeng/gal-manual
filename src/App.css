@@ -65,7 +65,7 @@ main .photo-wrapper {
 
 main .photo {
   width: 80%;
-  background-color: white;
+  background-color: lightgray;
   background-size: cover;
   background-position: center;
   padding: 20px;

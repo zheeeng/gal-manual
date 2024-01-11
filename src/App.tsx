@@ -186,7 +186,15 @@ function App() {
   }
 
   const goBack = () => {
-    const newHistory = history().slice(0, -1)
+    const assetsHistory = history()
+
+    const lastAsset = assetsHistory[assetsHistory.length - 1]
+
+    if (!lastAsset) {
+      return
+    }
+
+    const newHistory = assetsHistory.slice(0, assetMap[lastAsset]?.type === 'photo' ? -2 : -1)
     const newCurrentAssetId = newHistory[newHistory.length - 1]
 
     setHistory(newHistory)
